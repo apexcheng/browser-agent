@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=config.env
+source "$SCRIPT_DIR/config.env"
+
+usage() {
+  cat <<'EOF'
+用法:
+  ~/browser-agent/browser-agent ensure
+  ~/browser-agent/browser-agent start
+  ~/browser-agent/browser-agent status
+  ~/browser-agent/browser-agent connect
+  ~/browser-agent/browser-agent open <url>
+  ~/browser-agent/browser-agent snapshot
+  ~/browser-agent/browser-agent click <ref>
+  ~/browser-agent/browser-agent fill <ref> <text>
+  ~/browser-agent/browser-agent screenshot [ref]
+  ~/browser-agent/browser-agent disconnect
+  ~/browser-agent/browser-agent stop
+
+除 ensure/start/status/connect/disconnect/stop/open 外，其余参数原样传给 playwright-cli。
+EOF
+}
+
+require_cli() {
+  if ! command -v playwright-cli >/dev/null 2>&1; then
+    echo "缺少 playwright-cli，请先安装: npm install -g @playwright/cli" >&2
+    exit 1
+  fi
+}
+
+session_is_open() {
+  playwright-cli -s="$BROWSER_AGENT_SESSION" tab-list >/dev/null 2>&1
+}
+
+ensure_attached() {
+  require_cli
+  "$SCRIPT_DIR/ensure-chrome.sh" >/dev/null
+  if session_is_open; then
+    return
+  fi
+  (
+    cd "$BROWSER_AGENT_HOME"
+    playwright-cli -s="$BROWSER_AGENT_SESSION" attach --cdp "$CDP_URL" >/dev/null
+  )
+}
+
+command="${1:-help}"
+shift || true
+
+case "$command" in
+  ensure)
+    exec "$SCRIPT_DIR/ensure-chrome.sh"
+    ;;
+  start)
+    exec "$SCRIPT_DIR/ensure-chrome.sh"
+    ;;
+  status)
+    exec "$SCRIPT_DIR/status.sh"
+    ;;
+  connect)
+    ensure_attached
+    echo "已连接 Chrome AI Profile"
+    echo "Session: $BROWSER_AGENT_SESSION"
+    echo "CDP: $CDP_URL"
+    ;;
+  disconnect)
+    require_cli
+    if session_is_open; then
+      playwright-cli -s="$BROWSER_AGENT_SESSION" detach
+    else
+      echo "当前没有 Playwright CLI 连接"
+    fi
+    ;;
+  stop)
+    require_cli
+    if session_is_open; then
+      playwright-cli -s="$BROWSER_AGENT_SESSION" detach >/dev/null || true
+    fi
+    exec "$SCRIPT_DIR/stop-chrome.sh"
+    ;;
+  open)
+    if [[ $# -ne 1 ]]; then
+      echo "用法: ~/browser-agent/browser-agent open <url>" >&2
+      exit 1
+    fi
+    ensure_attached
+    cd "$BROWSER_AGENT_HOME"
+    exec playwright-cli -s="$BROWSER_AGENT_SESSION" goto "$1"
+    ;;
+  close)
+    echo "为避免误关共享 Chrome，不透传 close。断开用 disconnect，关闭浏览器用 stop。" >&2
+    exit 1
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    ensure_attached
+    cd "$BROWSER_AGENT_HOME"
+    exec playwright-cli -s="$BROWSER_AGENT_SESSION" "$command" "$@"
+    ;;
+esac
