@@ -54,7 +54,10 @@ function Ensure-Attached {
 }
 
 $command = if ($args.Count -gt 0) { $args[0] } else { "help" }
-$rest = if ($args.Count -gt 1) { @($args[1..($args.Count - 1)]) } else { @() }
+$rest = @()
+if ($args.Count -gt 1) {
+    $rest = @($args[1..($args.Count - 1)])
+}
 
 switch ($command) {
     "ensure" {
