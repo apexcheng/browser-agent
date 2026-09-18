@@ -17,5 +17,5 @@ Write-Output "Pages: $($pages.Count)"
 for ($i = 0; $i -lt $pages.Count; $i++) {
     $title = if ($pages[$i].title) { $pages[$i].title } else { "(no title)" }
     $url = if ($pages[$i].url) { $pages[$i].url } else { "" }
-    Write-Output "  ${i}: $title — $url"
+    Write-Output "  ${i}: $title - $url"
 }

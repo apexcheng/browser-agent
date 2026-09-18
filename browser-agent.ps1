@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 
 function Show-Usage {
     @"
-用法:
+Usage:
   browser-agent ensure
   browser-agent start
   browser-agent status
@@ -16,13 +16,13 @@ function Show-Usage {
   browser-agent disconnect
   browser-agent stop
 
-除 ensure/start/status/connect/disconnect/stop/open 外，其余参数原样传给 playwright-cli。
+All other commands are passed through to playwright-cli.
 "@
 }
 
 function Require-PlaywrightCli {
     if (-not (Get-Command playwright-cli -ErrorAction SilentlyContinue)) {
-        Write-Error "缺少 playwright-cli，请先安装: npm install -g @playwright/cli"
+        Write-Error "playwright-cli is missing. Install it with: npm install -g @playwright/cli"
         exit 1
     }
 }
@@ -69,7 +69,7 @@ switch ($command) {
     }
     "connect" {
         Ensure-Attached
-        Write-Output "已连接 Chrome AI Profile"
+        Write-Output "Connected to Chrome AI Profile"
         Write-Output "Session: $BrowserAgentSession"
         Write-Output "CDP: $CdpUrl"
     }
@@ -79,7 +79,7 @@ switch ($command) {
             & playwright-cli "-s=$BrowserAgentSession" detach
             exit $LASTEXITCODE
         }
-        Write-Output "当前没有 Playwright CLI 连接"
+        Write-Output "No Playwright CLI session is attached"
     }
     "stop" {
         Require-PlaywrightCli
@@ -91,7 +91,7 @@ switch ($command) {
     }
     "open" {
         if ($rest.Count -ne 1) {
-            Write-Error "用法: browser-agent open <url>"
+            Write-Error "Usage: browser-agent open <url>"
             exit 1
         }
         Ensure-Attached
@@ -104,7 +104,7 @@ switch ($command) {
         }
     }
     "close" {
-        Write-Error "为避免误关共享 Chrome，不透传 close。断开用 disconnect，关闭浏览器用 stop。"
+        Write-Error "The close command is blocked for the shared Chrome. Use disconnect or stop."
         exit 1
     }
     { $_ -in @("help", "-h", "--help") } {

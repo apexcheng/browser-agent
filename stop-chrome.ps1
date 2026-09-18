@@ -21,7 +21,7 @@ $processes = @(
 )
 
 if ($processes.Count -eq 0) {
-    Write-Output "Chrome AI Profile 未运行"
+    Write-Output "Chrome AI Profile is not running"
     exit 0
 }
 
@@ -30,11 +30,11 @@ $processes | ForEach-Object { Stop-Process -Id $_.ProcessId -ErrorAction Silentl
 for ($i = 0; $i -lt 25; $i++) {
     if (-not (Test-CdpReady)) {
         Remove-Item -Force -ErrorAction SilentlyContinue (Join-Path $BrowserAgentHome "run\chrome.pid")
-        Write-Output "Chrome AI Profile 已停止"
+        Write-Output "Chrome AI Profile stopped"
         exit 0
     }
     Start-Sleep -Milliseconds 200
 }
 
-Write-Error "Chrome 未在预期时间内停止，请手动关闭该窗口"
+Write-Error "Chrome did not stop in time; close the window manually"
 exit 1

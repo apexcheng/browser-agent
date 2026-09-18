@@ -23,22 +23,22 @@ function Get-ProfileChromeProcesses {
 New-Item -ItemType Directory -Force -Path $ChromeProfileDir, (Join-Path $BrowserAgentHome "logs"), (Join-Path $BrowserAgentHome "run") | Out-Null
 
 if (-not $ChromeBin -or -not (Test-Path $ChromeBin)) {
-    Write-Error "Chrome 不存在: $ChromeBin"
+    Write-Error "Chrome not found: $ChromeBin"
     exit 1
 }
 
 if (Test-CdpReady) {
     if (Get-ProfileChromeProcesses) {
-        Write-Output "Chrome AI Profile 已运行"
+        Write-Output "Chrome AI Profile is running"
         Write-Output "CDP: $CdpUrl"
         exit 0
     }
-    Write-Error "端口 $CdpPort 已被其他 Chrome 或程序占用"
+    Write-Error "Port $CdpPort is already in use by another Chrome instance or process"
     exit 1
 }
 
 if (Get-ProfileChromeProcesses) {
-    Write-Error "Chrome AI Profile 已被占用，但 CDP 端口不可用。请先关闭该 Profile 的 Chrome。"
+    Write-Error "Chrome AI Profile is in use but CDP is unavailable. Close that profile first."
     exit 1
 }
 
@@ -56,7 +56,7 @@ Start-Process -FilePath $ChromeBin -ArgumentList $arguments | Out-Null
 
 for ($i = 0; $i -lt 50; $i++) {
     if (Test-CdpReady) {
-        Write-Output "Chrome AI Profile 已启动"
+        Write-Output "Chrome AI Profile started"
         Write-Output "Profile: $ChromeProfileDir"
         Write-Output "CDP: $CdpUrl"
         exit 0
@@ -64,5 +64,5 @@ for ($i = 0; $i -lt 50; $i++) {
     Start-Sleep -Milliseconds 200
 }
 
-Write-Error "Chrome 启动失败，CDP 未在预期时间内就绪"
+Write-Error "Chrome failed to start: CDP did not become ready in time"
 exit 1

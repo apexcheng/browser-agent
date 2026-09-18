@@ -22,17 +22,17 @@ function Get-ProfileChromeProcesses {
 
 if (Test-CdpReady) {
     if (Get-ProfileChromeProcesses) {
-        Write-Output "Chrome AI Profile 已在线"
+        Write-Output "Chrome AI Profile is online"
         Write-Output "CDP: $CdpUrl"
         exit 0
     }
-    Write-Error "端口 $CdpPort 已被其他 Chrome 或程序占用"
+    Write-Error "Port $CdpPort is already in use by another Chrome instance or process"
     exit 1
 }
 
 $processes = @(Get-ProfileChromeProcesses)
 if ($processes.Count -gt 0) {
-    Write-Output "检测到 Chrome AI Profile 进程异常，正在重启"
+    Write-Output "Chrome AI Profile process is unhealthy; restarting"
     $processes | ForEach-Object { Stop-Process -Id $_.ProcessId -ErrorAction SilentlyContinue }
 
     for ($i = 0; $i -lt 25; $i++) {
@@ -45,7 +45,7 @@ if ($processes.Count -gt 0) {
 
 $listener = Get-NetTCPConnection -LocalPort $CdpPort -State Listen -ErrorAction SilentlyContinue
 if ($listener) {
-    Write-Error "端口 $CdpPort 已被其他程序占用"
+    Write-Error "Port $CdpPort is already in use by another process"
     exit 1
 }
 
