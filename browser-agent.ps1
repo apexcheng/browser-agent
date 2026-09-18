@@ -1,6 +1,8 @@
 $ErrorActionPreference = "Stop"
 . "$PSScriptRoot\config.windows.ps1"
 
+$PlaywrightCli = (Get-Command playwright-cli.cmd -ErrorAction SilentlyContinue).Source
+
 function Show-Usage {
     @"
 Usage:
@@ -21,14 +23,14 @@ All other commands are passed through to playwright-cli.
 }
 
 function Require-PlaywrightCli {
-    if (-not (Get-Command playwright-cli -ErrorAction SilentlyContinue)) {
+    if (-not $PlaywrightCli) {
         Write-Error "playwright-cli is missing. Install it with: npm install -g @playwright/cli"
         exit 1
     }
 }
 
 function Test-SessionOpen {
-    & playwright-cli "-s=$BrowserAgentSession" tab-list *> $null
+    & $PlaywrightCli "-s=$BrowserAgentSession" tab-list *> $null
     return ($LASTEXITCODE -eq 0)
 }
 
@@ -44,7 +46,7 @@ function Ensure-Attached {
 
     Push-Location $BrowserAgentHome
     try {
-        & playwright-cli "-s=$BrowserAgentSession" attach --cdp $CdpUrl | Out-Null
+        & $PlaywrightCli "-s=$BrowserAgentSession" attach --cdp $CdpUrl | Out-Null
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     } finally {
         Pop-Location
@@ -76,7 +78,7 @@ switch ($command) {
     "disconnect" {
         Require-PlaywrightCli
         if (Test-SessionOpen) {
-            & playwright-cli "-s=$BrowserAgentSession" detach
+            & $PlaywrightCli "-s=$BrowserAgentSession" detach
             exit $LASTEXITCODE
         }
         Write-Output "No Playwright CLI session is attached"
@@ -84,7 +86,7 @@ switch ($command) {
     "stop" {
         Require-PlaywrightCli
         if (Test-SessionOpen) {
-            & playwright-cli "-s=$BrowserAgentSession" detach *> $null
+            & $PlaywrightCli "-s=$BrowserAgentSession" detach *> $null
         }
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PSScriptRoot\stop-chrome.ps1"
         exit $LASTEXITCODE
@@ -97,7 +99,7 @@ switch ($command) {
         Ensure-Attached
         Push-Location $BrowserAgentHome
         try {
-            & playwright-cli "-s=$BrowserAgentSession" goto $rest[0]
+            & $PlaywrightCli "-s=$BrowserAgentSession" goto $rest[0]
             exit $LASTEXITCODE
         } finally {
             Pop-Location
@@ -114,7 +116,7 @@ switch ($command) {
         Ensure-Attached
         Push-Location $BrowserAgentHome
         try {
-            & playwright-cli "-s=$BrowserAgentSession" $command @rest
+            & $PlaywrightCli "-s=$BrowserAgentSession" $command @rest
             exit $LASTEXITCODE
         } finally {
             Pop-Location

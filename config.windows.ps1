@@ -1,3 +1,7 @@
+$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[Console]::OutputEncoding = $Utf8NoBom
+$OutputEncoding = $Utf8NoBom
+
 $BrowserAgentHome = if ($env:BROWSER_AGENT_HOME) {
     $env:BROWSER_AGENT_HOME
 } else {
