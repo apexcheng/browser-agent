@@ -7,11 +7,12 @@ description: 使用本机共享的真实 Google Chrome、固定 Profile 和 CDP�
 
 ## 固定入口
 
-所有本机 Skill、Python 项目和 AI Agent 统一使用：
+所有本机 Skill、Python 项目和 AI Agent 统一使用同一套协议：
 
 ```text
-控制入口：~/browser-agent/browser-agent
-共享 Profile：~/browser-agent/chrome-profile
+macOS 控制入口：~/browser-agent/browser-agent
+Windows 控制入口：%USERPROFILE%\browser-agent\browser-agent.cmd
+共享 Profile：<browser-agent>/chrome-profile
 CDP：http://127.0.0.1:19312
 ```
 
@@ -23,6 +24,12 @@ CDP：http://127.0.0.1:19312
 
 ```bash
 ~/browser-agent/browser-agent ensure
+```
+
+Windows 对应命令：
+
+```powershell
+%USERPROFILE%\browser-agent\browser-agent.cmd ensure
 ```
 
 `ensure` 会自动处理以下状态：
@@ -95,6 +102,12 @@ with sync_playwright() as playwright:
 ~/browser-agent/browser-agent fill <ref> "<text>"
 ~/browser-agent/browser-agent screenshot
 ~/browser-agent/browser-agent disconnect
+```
+
+Windows 使用完全相同的子命令，只将入口替换为：
+
+```text
+%USERPROFILE%\browser-agent\browser-agent.cmd
 ```
 
 页面跳转、刷新、弹窗或登录状态变化后，应重新执行 `snapshot`，不要继续使用旧的元素引用。

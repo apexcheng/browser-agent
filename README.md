@@ -15,6 +15,29 @@ CDP：http://127.0.0.1:19312
 控制入口：~/browser-agent/browser-agent
 ```
 
+Windows 复用同一仓库、同一命令协议，入口为：
+
+```text
+目录：%USERPROFILE%\browser-agent
+Chrome Profile：%USERPROFILE%\browser-agent\chrome-profile
+CDP：http://127.0.0.1:19312
+控制入口：%USERPROFILE%\browser-agent\browser-agent.cmd
+```
+
+Windows 首次使用需要安装：
+
+```powershell
+npm install -g @playwright/cli
+```
+
+之后可直接执行：
+
+```powershell
+%USERPROFILE%\browser-agent\browser-agent.cmd ensure
+%USERPROFILE%\browser-agent\browser-agent.cmd open "https://www.baidu.com"
+%USERPROFILE%\browser-agent\browser-agent.cmd snapshot
+```
+
 `~/browser-agent` 是固定入口，实际链接到：
 
 ```text
